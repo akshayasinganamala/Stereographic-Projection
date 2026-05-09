@@ -163,7 +163,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > Delaunay triangulation of the point cloud, with two filtering passes: (1) centroid-in-mask filter removing triangles outside ink regions, (2) edge-length filter removing stretched artifact triangles near the boundary.
 
 
-<img width="961" height="647" alt="Screenshot 2026-04-09 010006" src="https://github.com/user-attachments/assets/2fa1fa27-d416-4acd-957b-c2121cb38fed" />
+<img width="400" height="400" alt="Screenshot 2026-04-09 010006" src="https://github.com/user-attachments/assets/2fa1fa27-d416-4acd-957b-c2121cb38fed" />
 
 
 
