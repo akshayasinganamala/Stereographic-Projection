@@ -375,10 +375,9 @@ The conformal property (Prop. 6.4) explains why Kalamkari's intrinsic curved geo
 
 > Point LED placed at the north pole of the sphere in a dark room. The shadow cast on the flat surface below reconstructs the original Kalamkari motif — demonstrating the self-inverse property of stereographic projection physically.
 
-```
+
 <img width="478" height="602" alt="Screenshot 2026-04-09 191010" src="https://github.com/user-attachments/assets/26f69f47-6162-43a0-a10b-35508f262d2f" />
 
-```
 ---
 
 ### Side-by-Side Comparison
