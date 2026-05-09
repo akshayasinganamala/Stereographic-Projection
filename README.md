@@ -1,13 +1,14 @@
-# Stereographic Projection & Inverse Stereographic Mapping
-### A MATLAB-Based Computational Geometry and Visualization Framework
+# Kalamkari Stereographic Projection → 3D Printable STL
+### Transforming Traditional Indian Art into Spherical Geometry via Inverse Stereographic Mapping
 
-> Mapping the infinite plane onto the finite sphere — and back.
+> *A point light placed atop the printed sphere casts a shadow below — and that shadow is your original Kalamkari motif.*
 
 ---
 
 ![MATLAB](https://img.shields.io/badge/MATLAB-R2023b-orange?style=flat-square&logo=mathworks)
-![Domain](https://img.shields.io/badge/Domain-Computational%20Geometry-blue?style=flat-square)
-![Type](https://img.shields.io/badge/Type-Research%20%2F%20Visualization-green?style=flat-square)
+![Course](https://img.shields.io/badge/Course-Mathematics%20for%20Designers-blue?style=flat-square)
+![Domain](https://img.shields.io/badge/Domain-Computational%20Geometry%20%7C%203D%20Printing-green?style=flat-square)
+![Toolbox](https://img.shields.io/badge/Toolbox-Image%20Processing-red?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)
 
 ---
@@ -15,276 +16,351 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Objectives](#objectives)
-- [Mathematical Background](#mathematical-background)
-  - [The Unit Sphere](#the-unit-sphere)
-  - [Stereographic Projection](#stereographic-projection)
-  - [Inverse Stereographic Mapping](#inverse-stereographic-mapping)
-  - [Circle Preservation](#circle-preservation-under-projection)
-  - [Conformality](#angle-preserving-conformal-property)
-- [Methodology](#methodology)
+- [The Core Idea](#the-core-idea)
+- [Mathematical Foundation](#mathematical-foundation)
+  - [Inverse Stereographic Projection](#inverse-stereographic-projection)
+  - [Shadow as Forward Projection](#shadow-as-forward-projection)
+  - [Conformality and Circle Preservation](#conformality-and-circle-preservation)
+- [Full Pipeline](#full-pipeline)
+- [Pipeline Visualizations](#pipeline-visualizations)
 - [MATLAB Implementation](#matlab-implementation)
+- [Key Parameters](#key-parameters)
 - [Repository Structure](#repository-structure)
-- [Output Visualizations](#output-visualizations)
-- [Applications](#applications)
-- [Research Inspiration](#research-inspiration)
-- [Future Scope](#future-scope)
+- [3D Printing Guide](#3d-printing-guide)
+- [Applications and Context](#applications-and-context)
 - [Technologies Used](#technologies-used)
-- [Conclusion](#conclusion)
+- [Mathematical Reference](#mathematical-reference)
 - [Author](#author)
 
 ---
 
 ## Overview
 
-This repository presents a MATLAB-based computational framework for studying **stereographic projection** — a classical construction from differential geometry that establishes a one-to-one, angle-preserving (conformal) correspondence between the punctured unit sphere $S^2 \setminus \{Q\}$ and the Euclidean plane $\mathbb{R}^2$.
+This project implements a **9-step computational pipeline** in MATLAB that:
 
-The project implements both the **forward projection** (sphere → plane) and the **inverse stereographic mapping** (plane → sphere), alongside geometric transformations of curves, circles, and coordinate grids. The visualizations are designed to make abstract mathematical structure concretely perceptible.
+1. Takes any **Kalamkari motif image** as input
+2. Extracts its ink geometry as a **2D point cloud**
+3. Builds a **filtered Delaunay triangulation** over the motif
+4. Lifts that mesh onto a **unit sphere** via **inverse stereographic projection**
+5. Applies **Laplacian smoothing** with spherical re-projection
+6. Extrudes it into a **watertight solid shell** suitable for 3D printing
+7. Simulates the **shadow cast** by a point light through the sphere surface
+8. Exports a **binary STL file** scaled to physical millimetres
 
-This work sits at the intersection of **conformal geometry**, **computational mathematics**, and **scientific visualization**, and is informed directly by the formal treatment of stereographic projection as developed in the context of Euclidean and Non-Euclidean geometry (Wilkins, 2017).
-
----
-
-## Objectives
-
-- Implement the bijective stereographic projection map $\psi: S^2 \setminus \{(0,0,-1)\} \to \mathbb{R}^2$ and its inverse $\psi^{-1}: \mathbb{R}^2 \to S^2 \setminus \{(0,0,-1)\}$ in MATLAB with full numerical precision.
-- Visualize the geometric behaviour of circles and lines under both mappings.
-- Demonstrate the conformal (angle-preserving) property of stereographic projection numerically and visually.
-- Provide a modular, extensible codebase for computational experiments in spherical geometry.
+The physical result is a 3D-printed spherical lamp. When a point light source is placed at the top (north pole) of the sphere, the shadow projected onto a flat surface below **exactly reconstructs** the original Kalamkari pattern — because stereographic projection is its own inverse.
 
 ---
 
-## Mathematical Background
+## The Core Idea
 
-### The Unit Sphere
+**Kalamkari** is a centuries-old Indian hand-painted textile art form, characterized by intricate floral, figurative, and geometric motifs drawn with a tamarind-tipped pen using natural dyes. This project uses Kalamkari patterns as the geometric input to a mathematical transformation rooted in conformal geometry.
 
-The domain of projection is the unit sphere in $\mathbb{R}^3$:
+The insight driving the project:
 
-$$S^2 = \{(u, v, w) \in \mathbb{R}^3 : u^2 + v^2 + w^2 = 1\}$$
+> Stereographic projection from the north pole of a sphere onto a flat plane is conformal and maps circles to circles. Its inverse maps the flat motif back onto the sphere. A point light placed at the projection pole then casts a shadow that perfectly reconstructs the original flat image.
 
-The projection pole is fixed at the **south pole** $N = (0, 0, -1)$. Every point on $S^2$ distinct from $N$ is mapped to a unique point on the equatorial plane $\{z = 0\}$.
+```
+Flat Kalamkari Image
+        ↓   inverse stereographic projection (Step 5)
+Motif geometry wrapped on sphere surface
+        ↓   solid extrusion + STL export (Steps 7–9)
+Physical 3D-printed sphere lamp
+        ↓   point light source at north pole
+Shadow on floor = original Kalamkari motif  ✓
+```
 
----
-
-### Stereographic Projection
-
-The stereographic projection $\psi: S^2 \setminus \{(0,0,-1)\} \to \mathbb{R}^2$ maps each point $(u, v, w)$ on the sphere to the intersection of the line through $(u, v, w)$ and $(0, 0, -1)$ with the plane $z = 0$.
-
-**Forward map:**
-
-$$\psi(u, v, w) = \left(\frac{u}{w+1},\; \frac{v}{w+1}\right)$$
-
-This map is well-defined for all $(u, v, w) \in S^2$ with $w \neq -1$, i.e., everywhere except the projection pole itself.
+The mathematics closes on itself: the shadow simulation in Step 8 is the forward stereographic projection, undoing the inverse map applied in Step 5.
 
 ---
 
-### Inverse Stereographic Mapping
+## Mathematical Foundation
 
-The inverse map $\psi^{-1}: \mathbb{R}^2 \to S^2 \setminus \{(0,0,-1)\}$ reconstructs the spherical coordinates $(u, v, w)$ from any planar point $(x, y)$.
+### Inverse Stereographic Projection
 
-**Inverse map (Proposition 6.1):**
+The pipeline lifts each planar point from the normalized image domain $[-1,1]^2 \subset \mathbb{R}^2$ onto the unit sphere $S^2$ via the inverse stereographic map $\psi^{-1}: \mathbb{R}^2 \to S^2$.
 
-$$u = \frac{2x}{1 + x^2 + y^2}, \qquad v = \frac{2y}{1 + x^2 + y^2}, \qquad w = \frac{1 - x^2 - y^2}{1 + x^2 + y^2}$$
+Given a normalized planar point $(X, Y)$ extracted from the motif, let:
 
-**Verification:** Substituting into $u^2 + v^2 + w^2$ confirms that every $(x, y) \in \mathbb{R}^2$ maps to a point on $S^2$:
+$$R^2 = X^2 + Y^2$$
 
-$$\frac{4x^2 + 4y^2 + (1 - x^2 - y^2)^2}{(1 + x^2 + y^2)^2} = 1$$
+Then the corresponding spherical coordinates are:
 
-This establishes that $\psi^{-1}$ maps $\mathbb{R}^2$ into $S^2 \setminus \{(0,0,-1)\}$, and that $\psi$ is a **bijection**.
+$$X_s = \frac{2X}{R^2 + 1}, \qquad Y_s = \frac{2Y}{R^2 + 1}, \qquad Z_s = \frac{R^2 - 1}{R^2 + 1} + 1$$
+
+The $+1$ offset on $Z_s$ translates the sphere upward so its south pole rests exactly at $Z = 0$, placing the model flat on the 3D printer bed with no support material required beneath it.
+
+**Verification:** Substituting back confirms every projected point lies on the unit sphere centred at $(0,0,1)$:
+
+$$X_s^2 + Y_s^2 + (Z_s - 1)^2 = 1 \quad \forall\; (X, Y) \in \mathbb{R}^2$$
+
+The image centre $(0, 0)$ maps to the **south pole** $(0, 0, 0)$. Points far from the origin approach the **north pole** $(0, 0, 2)$ — which is where the light source is placed for the shadow simulation.
 
 ---
 
-### Circle Preservation Under Projection
+### Shadow as Forward Projection
 
-One of the defining geometric properties of stereographic projection is that it maps **circles to circles or lines**, and vice versa. Two cases arise:
+Step 8 implements the **forward** stereographic projection as a ray-casting shadow simulation. A point light at position $L = (L_x, L_y, L_z)$ casts rays through each sphere vertex $V_s$ onto the ground plane $Z = 0$.
 
-**Case 1 — Circles through the pole $N = (0,0,-1)$:**
+The parametric ray is $P(t) = L + t(V_s - L)$. Setting $Z = 0$ and solving for $t$:
 
-A circle on $S^2$ defined by $\ell u + m v + n w = -n$ (i.e., passing through the south pole) maps under $\psi$ to the straight line in $\mathbb{R}^2$:
+$$t = \frac{-L_z}{V_{s,z} - L_z}$$
 
-$$px + qy = k, \qquad \text{where } p = \frac{\ell}{\sqrt{\ell^2 + m^2}},\; q = \frac{m}{\sqrt{\ell^2 + m^2}},\; k = \sqrt{\frac{1}{\ell^2 + m^2} - 1}$$
+$$P_x = L_x + t(V_{s,x} - L_x), \qquad P_y = L_y + t(V_{s,y} - L_y)$$
 
-**Case 2 — Circles not through the pole:**
+This is precisely the forward stereographic projection formula, mapping sphere points back to the plane. The shadow on the floor is therefore a scaled, geometrically faithful copy of the original flat motif — the mathematical loop is closed.
 
-A circle on $S^2$ defined by $\ell u + mv + nw = c$ (with $c \neq -n$) maps to a Euclidean circle $(x - a)^2 + (y - b)^2 = r^2$ in $\mathbb{R}^2$, where:
+---
 
-$$a = \frac{\ell}{c + n}, \qquad b = \frac{m}{c + n}, \qquad r = \frac{\sqrt{1 - c^2}}{|c + n|}$$
+### Conformality and Circle Preservation
 
-**Conversely**, given any circle of radius $r$ centred at $(a, b)$ in $\mathbb{R}^2$, its pre-image under $\psi$ is the circle on $S^2$ where the sphere intersects the plane:
+Because stereographic projection is **conformal** (angle-preserving), the angles between curves in the original Kalamkari image are preserved exactly on the sphere surface. The characteristic smooth curves, interlocking spirals, and floral arcs of Kalamkari — which depend on precise angular transitions — remain geometrically faithful after projection.
+
+Two classical results govern the circle geometry (following Wilkins, 2017):
+
+**Circles through the pole** (lines in the image that pass through the image centre) map to **great circles** on the sphere.
+
+**Circles not through the pole** map to **small circles** on the sphere. Specifically, a circle of radius $r$ centred at $(a, b)$ in $\mathbb{R}^2$ lifts to the intersection of $S^2$ with the plane:
 
 $$2au + 2bv + (1 + r^2 - a^2 - b^2)\,w = 1 - r^2 + a^2 + b^2$$
 
----
-
-### Angle-Preserving (Conformal) Property
-
-Stereographic projection is **conformal**: it preserves the angle between any two curves at their point of intersection.
-
-**Proof outline (Proposition 6.4):** Let $P \in S^2 \setminus \{Q\}$ and let $L_1, L_2$ be two lines in the tangent plane $T_P$ intersecting at $P$. The planes $\Pi_1 = \text{span}(L_1, Q)$ and $\Pi_2 = \text{span}(L_2, Q)$ are each stable under the reflection $\tau$ across the perpendicular bisector plane $\Lambda$ of the segment $PQ$. Since $\tau$ maps $T_P \to T_Q$ and preserves angles, the angle between $L_1$ and $L_2$ at $P$ equals the angle between $M_1 = \Pi_1 \cap T_Q$ and $M_2 = \Pi_2 \cap T_Q$ at $Q$.
-
-The equatorial plane $\Pi_Q$ is parallel to $T_Q$, so lines $N_i = \Pi_Q \cap \Pi_i$ are parallel to $M_i$, and intersect at $\psi(P)$. The angle at $\psi(P)$ between $N_1$ and $N_2$ is therefore equal to the original angle between $L_1$ and $L_2$ at $P$. $\blacksquare$
+This means every circular element in the Kalamkari motif — petals, borders, medallions — becomes a spherical circle of precisely determinable radius and orientation on the sphere.
 
 ---
 
-## Methodology
+## Full Pipeline
 
-The project follows a structured computational pipeline:
+| Step | Operation | Input → Output |
+|:---:|---|---|
+| **1** | Image Load | File dialog → raw image array |
+| **2** | Image Processing | RGB → Grayscale → Binary mask → Morphological dilation |
+| **3** | Point Cloud Generation | Binary mask → boundary + internal fill points in $[-1,1]^2$ |
+| **4** | Delaunay Triangulation | 2D points → filtered triangle mesh (centroid + edge length filters) |
+| **5** | Inverse Stereo Projection | 2D mesh → mesh lifted onto $S^2$ |
+| **6** | Laplacian Smoothing | Raw sphere mesh → smooth sphere mesh (with spherical re-projection) |
+| **7** | Solid Extrusion | Single-surface mesh → watertight solid shell |
+| **8** | Shadow Preview | Sphere mesh + light position → ground-plane shadow patch |
+| **9** | STL Export | Solid mesh → binary `.stl` at physical scale (mm) |
 
-1. **Parameterisation** — The unit sphere is parameterised in spherical coordinates $(\theta, \phi)$ and sampled on a fine mesh.
-2. **Forward projection** — Each spherical point $(u, v, w)$ is projected to the plane via $\psi$.
-3. **Inverse mapping** — Planar grids, circles, and curves are lifted back to $S^2$ via $\psi^{-1}$.
-4. **Geometric verification** — Circle images under projection are computed analytically and confirmed numerically against the MATLAB-generated loci.
-5. **Conformality testing** — Angle intersections of projected curves are measured and compared against their spherical counterparts.
-6. **Visualization** — 3D surface plots of the sphere, overlaid with projected grids and curves, are rendered with matched planar views for side-by-side comparison.
+---
+
+## Pipeline Visualizations
+
+### Step 2 — Binary Mask After Processing
+
+> The Kalamkari image is converted to grayscale, auto-polarity-detected (dark-on-light or light-on-dark), thresholded, and morphologically dilated to produce ink regions with printable line thickness.
+
+```
+[ INSERT: screenshot of Step 2 figure — binary_mask.png ]
+```
+
+---
+
+### Step 3 — 2D Point Cloud
+
+> Boundary (Laplacian edge-detected) points overlaid with internal grid-fill points. All coordinates normalized to $[-1, +1]^2$. This is the raw geometric representation of the Kalamkari ink.
+
+```
+[ INSERT: 2D_POINT CLOUD.fig exported as PNG ]
+```
+
+---
+
+### Step 4 — Delaunay Mesh (Filtered)
+
+> Delaunay triangulation of the point cloud, with two filtering passes: (1) centroid-in-mask filter removing triangles outside ink regions, (2) edge-length filter removing stretched artifact triangles near the boundary.
+
+```
+[ INSERT: Delaunay mesh.fig exported as PNG ]
+```
+
+---
+
+### Steps 5–6 — Kalamkari Motif on Sphere
+
+> The filtered 2D mesh lifted to $S^2$ via inverse stereographic projection, then smoothed with Laplacian iterations. Spherical re-projection after each smoothing step prevents the mesh from shrinking inward off the sphere surface.
+
+```
+[ INSERT: Kalamkari_motif.fig exported as PNG ]
+```
+
+---
+
+### Step 7 — Watertight Solid Shell
+
+> The sphere surface extruded radially outward by `Thickness_mm / PhysicalRadius_mm` along outward unit normals. Inner and outer shells are stitched at the boundary edges to form a fully enclosed, manifold solid.
+
+```
+[ INSERT: watertight solid shell.fig exported as PNG ]
+```
+
+---
+
+### Step 8 — Simulated Shadow
+
+> Ray-cast from the light source through each sphere vertex to the $Z = 0$ plane. The resulting patch on the floor is the forward stereographic projection of the sphere mesh — reconstructing the original Kalamkari motif.
+
+```
+[ INSERT: simulated shadow.fig exported as PNG ]
+```
+
+---
+
+### Full Pipeline Summary (6-Panel)
+
+> Auto-generated summary figure at end of run: mask → point cloud → filtered mesh → sphere projection → watertight solid → shadow preview.
+
+```
+[ INSERT: Full_pipeline.fig exported as PNG ]
+```
 
 ---
 
 ## MATLAB Implementation
 
-The codebase is written in MATLAB and is structured into modular scripts and functions. Key implementation decisions:
+### Auto-Polarity Detection
 
-- **Parameterisation mesh:** Spherical coordinates $(\theta \in [0, \pi],\; \phi \in [0, 2\pi])$ sampled at uniform angular resolution.
-- **Numerical stability:** The formula $w + 1 = \frac{2}{1 + x^2 + y^2}$ is used in the inverse map to avoid division-by-zero at the origin.
-- **Circle rendering:** Circles on $S^2$ are generated from the planar equation $\ell u + mv + nw = c$ and lifted to 3D; their projections are computed both analytically and numerically for cross-validation.
-- **Grid overlay:** Cartesian grid lines on $\mathbb{R}^2$ are mapped onto $S^2$ via $\psi^{-1}$, producing the characteristic curved coordinate grid visible on the sphere.
-- **Conformality visualization:** Two families of orthogonal circles on the plane are mapped to $S^2$ and their intersection angles verified.
+The script detects image polarity from the mean pixel value and inverts the mask if needed — handling both dark-ink-on-white and light-motif-on-dark inputs automatically:
 
-### Core Functions
+```matlab
+meanVal = mean(gry_resized(:));
+if meanVal > 128
+    mask = gry_resized < 128;   % dark ink on light background → invert
+else
+    mask = gry_resized > 128;   % bright motifs on dark background → keep
+end
+```
 
-| Function | Description |
-|---|---|
-| `stereo_project.m` | Forward map $\psi(u,v,w) \to (x,y)$ |
-| `inverse_stereo.m` | Inverse map $\psi^{-1}(x,y) \to (u,v,w)$ |
-| `sphere_circle.m` | Generates a great-circle/small-circle on $S^2$ given $(\ell, m, n, c)$ |
-| `project_circle.m` | Computes the planar image of a spherical circle |
-| `lift_curve.m` | Lifts any planar curve to $S^2$ via inverse mapping |
-| `plot_sphere_grid.m` | Renders the sphere with projected Cartesian grid overlay |
-| `conformality_check.m` | Numerically verifies angle preservation at sample points |
-| `visualize_all.m` | Master script: runs full pipeline and generates all figures |
+### Two-Pass Mesh Filtering (Step 4)
+
+Raw Delaunay triangulation produces many triangles outside the ink region and long artifact triangles at boundaries. Two filters remove these:
+
+```matlab
+% Pass 1: centroid must fall inside the ink mask
+keep = mask(sub2ind([N N], pr, pc)) > 0;
+F = F(keep, :);
+
+% Pass 2: no triangle edge longer than threshold
+L = max([edge_ab, edge_bc, edge_ca], [], 2);
+F = F(L < edgeLengthThresh, :);
+```
+
+### Laplacian Smoothing with Spherical Re-projection (Step 6)
+
+Standard Laplacian smoothing causes vertices to migrate inward off the sphere. After each iteration, vertices are re-normalized back onto the unit sphere:
+
+```matlab
+for it = 1:smoothingIter
+    W         = sparse(I, J, 1, size(SP,1), size(SP,1));
+    W         = (W + W') > 0;
+    SP_smooth = (W * SP) ./ sum(W, 2);       % Laplacian average
+
+    SP_smooth(:,3) = SP_smooth(:,3) - 1;     % shift to sphere centred at origin
+    norms          = sqrt(sum(SP_smooth.^2, 2));
+    SP_smooth      = SP_smooth ./ norms;     % re-project onto unit sphere
+    SP_smooth(:,3) = SP_smooth(:,3) + 1;     % shift back to printer bed
+    SP = SP_smooth;
+end
+```
+
+### Watertight Shell Assembly (Step 7)
+
+The solid is built from three face sets with consistent winding:
+
+```matlab
+F_in    = F(:, [1 3 2]);        % inner faces — reversed winding (inward normals)
+F_out   = F + numV;             % outer faces — offset vertex indices
+F_wall1 = [u, v, numV+v];       % rim triangles connecting inner to outer
+F_wall2 = [u, numV+v, numV+u];
+
+F_solid = [F_in; F_out; F_wall1; F_wall2];
+```
+
+Boundary edges are identified via `freeBoundary()` on the inner triangulation. No manual edge-finding is needed.
+
+### Binary STL Export (Step 9)
+
+The file is written in binary format (80-byte header + triangle count + per-triangle records) for compact size and broad slicer compatibility:
+
+```matlab
+fwrite(fid, single(normals(i,:)), 'float32');   % face normal
+fwrite(fid, single(v1(i,:)),      'float32');   % vertex 1
+fwrite(fid, single(v2(i,:)),      'float32');   % vertex 2
+fwrite(fid, single(v3(i,:)),      'float32');   % vertex 3
+fwrite(fid, uint16(0),            'uint16');    % attribute byte count
+```
+
+---
+
+## Key Parameters
+
+All tunable parameters are declared at the top of `kalamkari_2.m` for easy adjustment:
+
+| Parameter | Default | Description |
+|---|---|---|
+| `PhysicalRadius_mm` | `50` | Sphere radius → 100 mm total diameter |
+| `Thickness_mm` | `2` | Wall thickness (2 mm is standard for FDM) |
+| `N` | `800` | Processing resolution (800×800 pixel grid) |
+| `thickeningAmount` | `7` | Dilation kernel size — controls printed line thickness |
+| `smoothingIter` | `5` | Laplacian smoothing passes (3–8 recommended) |
+| `edgeLengthThresh` | `0.04` | Maximum triangle edge length in normalized units |
+| `gridStep` | `2` | Internal fill point spacing (smaller = denser mesh) |
+| `Lpos` | `[0, 0, 3.5]` | Light source position for shadow simulation |
 
 ---
 
 ## Repository Structure
 
 ```
-stereographic-projection-matlab/
+kalamkari-stereographic-projection/
 │
-├── src/
-│   ├── stereo_project.m          # Forward stereographic projection
-│   ├── inverse_stereo.m          # Inverse stereographic mapping
-│   ├── sphere_circle.m           # Circle generation on S²
-│   ├── project_circle.m          # Circle image computation
-│   ├── lift_curve.m              # Planar curve → sphere
-│   ├── plot_sphere_grid.m        # Sphere + grid visualization
-│   ├── conformality_check.m      # Angle-preservation verification
-│   └── visualize_all.m           # Master runner script
+├── kalamkari_2.m                        # Main 9-step MATLAB pipeline
 │
 ├── outputs/
 │   ├── figures/
-│   │   ├── sphere_with_grid.png
-│   │   ├── circle_projection.png
-│   │   ├── inverse_map_result.png
-│   │   └── conformality_demo.png
-│   └── data/
-│       ├── projected_coords.mat
-│       └── sphere_mesh.mat
+│   │   ├── 2D_POINT CLOUD.fig
+│   │   ├── Delaunay mesh.fig
+│   │   ├── Kalamkari_motif.fig
+│   │   ├── Full_pipeline.fig
+│   │   ├── simulated shadow.fig
+│   │   └── watertight solid shell.fig
+│   └── stl/
+│       └── 2026_Maths4Des_04CAD_STL_EC23B1031_Kalamkari.stl
+│
+├── input_images/
+│   └── (place Kalamkari .png / .jpg files here)
 │
 ├── docs/
-│   ├── mathematical_notes.pdf
-│   └── references.md
+│   └── mathematical_notes.md
 │
-├── tests/
-│   ├── test_bijection.m          # Confirms ψ∘ψ⁻¹ = identity
-│   ├── test_circle_map.m         # Validates circle-to-circle mapping
-│   └── test_angles.m             # Conformality numerical tests
-│
-├── README.md
-└── LICENSE
+└── README.md
 ```
 
 ---
 
-## Output Visualizations
+## 3D Printing Guide
 
-### Sphere with Projected Cartesian Grid
+1. Open the exported `.stl` in **Cura**, **PrusaSlicer**, or **Bambu Studio**
+2. Verify mesh integrity — no holes, wall thickness ≥ 2 mm throughout
+3. Orient with the south pole flat on the bed — no brim or raft needed
+4. Recommended settings: 0.2 mm layer height, 15% infill, no supports
+5. Material: **PLA** or **PETG**; translucent or white filament maximizes the lamp shadow effect
+6. Post-print: place a small point LED or candle at the north pole (top of sphere)
+7. Hold above a flat surface in a dark room — the Kalamkari motif appears in shadow below
 
-> The standard Cartesian grid on $\mathbb{R}^2$ lifted to $S^2$ via $\psi^{-1}$. Grid lines become circles on the sphere that all pass through the south pole $(0, 0, -1)$.
-
-```
-[ INSERT: outputs/figures/sphere_with_grid.png ]
-```
-
----
-
-### Circle-to-Circle Mapping
-
-> A family of circles on $S^2$ not passing through the pole, and their images as Euclidean circles in the plane.
-
-```
-[ INSERT: outputs/figures/circle_projection.png ]
-```
+> **Tip:** The closer the light to the pole, the larger and sharper the projected shadow. Moving the light laterally off-centre introduces a controlled Möbius-type distortion to the shadow — itself a mathematically interesting effect.
 
 ---
 
-### Inverse Stereographic Mapping Result
+## Applications and Context
 
-> Planar lemniscates, Archimedean spirals, and elliptic curves lifted to the sphere surface via the inverse map.
-
-```
-[ INSERT: outputs/figures/inverse_map_result.png ]
-```
-
----
-
-### Conformality Demonstration
-
-> Two orthogonal curve families on the plane, lifted to $S^2$. Intersection angles are preserved exactly under the mapping.
-
-```
-[ INSERT: outputs/figures/conformality_demo.png ]
-```
-
----
-
-## Applications
-
-Stereographic projection and its inverse appear across a wide range of disciplines:
-
-| Domain | Application |
+| Domain | Connection |
 |---|---|
-| Cartography | Stereographic map projections (polar maps, navigation charts) |
-| Complex Analysis | The Riemann sphere; Möbius transformations as sphere rotations |
-| Signal Processing | Directional data representation on the sphere |
-| Computer Graphics | Environment mapping, spherical texture projection |
-| Crystallography | Pole figures; orientation distribution analysis |
-| Antenna Engineering | Radiation pattern visualization on the unit sphere |
-| Physics | Spin states in quantum mechanics (Bloch sphere) |
-| Astronomy | All-sky survey projections; stellar catalogue mapping |
-
----
-
-## Research Inspiration
-
-This project is grounded in the classical mathematical treatment of stereographic projection, as formalized in:
-
-- **D. R. Wilkins**, *MA232A — Euclidean and Non-Euclidean Geometry*, School of Mathematics, Trinity College Dublin, Michaelmas Term 2017, Section 6.
-
-The mathematical properties leveraged here — bijectivity (Proposition 6.1), circle preservation (Propositions 6.2 and 6.3), and conformality (Proposition 6.4) — are each proven formally in that reference and serve as the precise mathematical specification for this implementation.
-
-The historical origins of stereographic projection trace to **Claudius Ptolemy's** *Planisphaerium* (2nd century AD), which described the projection and investigated its properties for astronomical applications. The work survived through its Arabic translation and remains one of the earliest documented treatments of a conformal map.
-
-> Sidoli, N. & Berggren, J. L. (2007). *The Arabic version of Ptolemy's Planisphere or Flattening the Surface of the Sphere: Text, Translation, Commentary.* SCIAMVS 8, 37–139.
-
----
-
-## Future Scope
-
-- **Extension to hyperbolic geometry:** Implement the analogous projection from the hyperboloid model of $\mathbb{H}^2$ onto the Poincaré disk.
-- **Möbius transformation visualization:** Represent Möbius transformations of $\mathbb{C} \cup \{\infty\}$ as isometries of $S^2$ acting through the stereographic correspondence.
-- **Dynamic animation:** Animate continuous deformation of planar curves as they are lifted and projected, using MATLAB's `VideoWriter`.
-- **Higher-dimensional extension:** Generalize to stereographic projection from $S^n \subset \mathbb{R}^{n+1}$ onto $\mathbb{R}^n$.
-- **Numerical error analysis:** Quantify floating-point deviation from exact conformality and bijectivity across the sphere mesh.
-- **GUI interface:** Build a MATLAB App Designer interface for interactive selection of projection poles and input curves.
+| **Computational Art** | Parametric encoding of traditional craft geometry |
+| **Mathematical Visualization** | Physical, tactile demonstration of stereographic projection |
+| **3D Printing / Fabrication** | Direct image-to-STL pipeline with no intermediate CAD |
+| **Design Education** | *Mathematics for Designers* course project |
+| **Conformal Geometry** | Applied demonstration of angle-preserving mappings |
+| **Cultural Heritage** | Encoding Kalamkari patterns in geometrically precise 3D form |
 
 ---
 
@@ -292,17 +368,35 @@ The historical origins of stereographic projection trace to **Claudius Ptolemy's
 
 | Tool | Role |
 |---|---|
-| **MATLAB R2023b** | Primary implementation and visualization environment |
-| **Symbolic Math Toolbox** | Analytic verification of projection formulas |
-| **MATLAB Graphics** | 3D surface rendering, curve overlay, figure export |
-| **LaTeX / MathJax** | Mathematical documentation |
+| **MATLAB R2023b** | Complete pipeline — image processing, geometry, STL export |
+| **Image Processing Toolbox** | `imresize`, `rgb2gray`, `imshow` |
+| **`delaunayTriangulation`** | 2D constrained mesh generation |
+| **`freeBoundary`** | Boundary edge detection for shell stitching |
+| **`trisurf` / `triplot`** | 3D and 2D mesh visualization |
+| **Custom binary STL writer** | Implemented via MATLAB `fwrite` — no toolbox dependency |
+| **Cura / PrusaSlicer** | Downstream slicing for FDM 3D printing |
 
 ---
 
-## Conclusion
+## Mathematical Reference
 
-This project demonstrates that stereographic projection — despite being derivable from elementary analytic geometry — encodes deep structural properties: it is bijective, circle-preserving, and conformal. The MATLAB implementation makes these properties computationally verifiable and visually intuitive, bridging the gap between formal mathematical proof and geometric intuition.
+This project directly implements the inverse stereographic mapping formalized in:
 
-The inverse stereographic map in particular offers a powerful tool for lifting arbitrary planar geometry onto the sphere, enabling cross-domain applications in graphics, signal processing, and cartography. This codebase is intended as both a self-contained research artefact and an extensible platform for further investigation in computational spherical geometry.
+> D. R. Wilkins, *MA232A — Euclidean and Non-Euclidean Geometry*, School of Mathematics, Trinity College Dublin, Michaelmas Term 2017, Section 6: Stereographic Projection — Propositions 6.1 (bijectivity and inverse formula), 6.2–6.3 (circle and line preservation), 6.4 (conformality).
+
+The conformal property (Prop. 6.4) explains why Kalamkari's intrinsic curved geometry is preserved faithfully on the sphere. The circle-preservation property (Props. 6.2–6.3) means every circular element in the motif — petals, medallions, borders — lifts to a precisely defined spherical circle. The shadow simulation is the forward projection of Prop. 6.1, completing the mathematical round-trip.
 
 ---
+
+## Author
+
+**[Your Name]** — `EC23B1031`
+B.Tech, [Department], [Institution]
+*Mathematics for Designers — 2026*
+
+- GitHub: [@yourusername](https://github.com/yourusername)
+- Email: your.email@institution.ac.in
+
+---
+
+*"Place a light at the north pole. The shadow below is the map you started with — the mathematics comes full circle."*
