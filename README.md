@@ -143,7 +143,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > The Kalamkari image is converted to grayscale, auto-polarity-detected (dark-on-light or light-on-dark), thresholded, and morphologically dilated to produce ink regions with printable line thickness.
 
 
-<img width="425" height="428" alt="Screenshot 2026-04-09 005510" src="https://github.com/user-attachments/assets/377d390a-3e11-45ea-9bbf-07e87e9750c6" />
+<img width="200" height="200" alt="Screenshot 2026-04-09 005510" src="https://github.com/user-attachments/assets/377d390a-3e11-45ea-9bbf-07e87e9750c6" />
 
 
 
@@ -153,7 +153,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 
 > Boundary (Laplacian edge-detected) points overlaid with internal grid-fill points. All coordinates normalized to $[-1, +1]^2$. This is the raw geometric representation of the Kalamkari ink.
 
-<img width="977" height="639" alt="Screenshot 2026-04-09 005932" src="https://github.com/user-attachments/assets/db85edb1-1586-408f-85cd-e0751da8b3ae" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 005932" src="https://github.com/user-attachments/assets/db85edb1-1586-408f-85cd-e0751da8b3ae" />
 
 
 ---
@@ -163,7 +163,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > Delaunay triangulation of the point cloud, with two filtering passes: (1) centroid-in-mask filter removing triangles outside ink regions, (2) edge-length filter removing stretched artifact triangles near the boundary.
 
 
-<img width="400" height="400" alt="Screenshot 2026-04-09 010006" src="https://github.com/user-attachments/assets/2fa1fa27-d416-4acd-957b-c2121cb38fed" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 010006" src="https://github.com/user-attachments/assets/2fa1fa27-d416-4acd-957b-c2121cb38fed" />
 
 
 
@@ -174,7 +174,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > The filtered 2D mesh lifted to $S^2$ via inverse stereographic projection, then smoothed with Laplacian iterations. Spherical re-projection after each smoothing step prevents the mesh from shrinking inward off the sphere surface.
 
 
-<img width="813" height="607" alt="Screenshot 2026-04-09 011607" src="https://github.com/user-attachments/assets/0a8d2605-2664-4af3-8209-2bb536f49b27" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 011607" src="https://github.com/user-attachments/assets/0a8d2605-2664-4af3-8209-2bb536f49b27" />
 
 
 ---
@@ -184,7 +184,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > The sphere surface extruded radially outward by `Thickness_mm / PhysicalRadius_mm` along outward unit normals. Inner and outer shells are stitched at the boundary edges to form a fully enclosed, manifold solid.
 
 
-<img width="765" height="615" alt="Screenshot 2026-04-09 011637" src="https://github.com/user-attachments/assets/5023423b-720a-4da9-82f3-160f693f0b29" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 011637" src="https://github.com/user-attachments/assets/5023423b-720a-4da9-82f3-160f693f0b29" />
 
 
 
@@ -195,7 +195,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > Ray-cast from the light source through each sphere vertex to the $Z = 0$ plane. The resulting patch on the floor is the forward stereographic projection of the sphere mesh — reconstructing the original Kalamkari motif.
 
 
-<img width="661" height="597" alt="Screenshot 2026-04-09 160454" src="https://github.com/user-attachments/assets/85bac26f-bb58-439a-be98-e0a2a624e8ed" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 160454" src="https://github.com/user-attachments/assets/85bac26f-bb58-439a-be98-e0a2a624e8ed" />
 
 
 
@@ -359,7 +359,7 @@ The conformal property (Prop. 6.4) explains why Kalamkari's intrinsic curved geo
 > The final 3D-printed spherical shell in PLA/PETG. Wall thickness: 2 mm. Diameter: 100 mm.
 
 
-<img width="377" height="408" alt="Screenshot 2026-04-09 191802" src="https://github.com/user-attachments/assets/dfad573b-91fb-4081-82b8-66ac79a3ee57" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 191802" src="https://github.com/user-attachments/assets/dfad573b-91fb-4081-82b8-66ac79a3ee57" />
 
 
 
@@ -371,15 +371,15 @@ The conformal property (Prop. 6.4) explains why Kalamkari's intrinsic curved geo
 > Point LED placed at the north pole of the sphere in a dark room. The shadow cast on the flat surface below reconstructs the original Kalamkari motif — demonstrating the self-inverse property of stereographic projection physically.
 
 
-<img width="478" height="602" alt="Screenshot 2026-04-09 191010" src="https://github.com/user-attachments/assets/26f69f47-6162-43a0-a10b-35508f262d2f" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 191010" src="https://github.com/user-attachments/assets/26f69f47-6162-43a0-a10b-35508f262d2f" />
 
 ---
 
 ### Side-by-Side Comparison
 
 | Original Kalamkari Motif | Shadow Projection |
-<img width="425" height="426" alt="Screenshot 2026-04-09 005443" src="https://github.com/user-attachments/assets/18f68bda-8dd0-4611-bfd2-c6b9a59e2d00" />
-<img width="478" height="602" alt="Screenshot 2026-04-09 191010" src="https://github.com/user-attachments/assets/b3129e62-777e-48f6-a0ee-2ae3b1bd8fbc" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 005443" src="https://github.com/user-attachments/assets/18f68bda-8dd0-4611-bfd2-c6b9a59e2d00" />
+<img width="300" height="300" alt="Screenshot 2026-04-09 191010" src="https://github.com/user-attachments/assets/b3129e62-777e-48f6-a0ee-2ae3b1bd8fbc" />
  
 
 > The correspondence between the input motif and the projected shadow visually validates the mathematical pipeline end-to-end.
