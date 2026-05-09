@@ -184,7 +184,7 @@ This means every circular element in the Kalamkari motif — petals, borders, me
 > The sphere surface extruded radially outward by `Thickness_mm / PhysicalRadius_mm` along outward unit normals. Inner and outer shells are stitched at the boundary edges to form a fully enclosed, manifold solid.
 
 
-<img width="300" height="300" alt="Screenshot 2026-04-09 011637" src="https://github.com/user-attachments/assets/5023423b-720a-4da9-82f3-160f693f0b29" />
+<img width="400" height="300" alt="Screenshot 2026-04-09 011637" src="https://github.com/user-attachments/assets/5023423b-720a-4da9-82f3-160f693f0b29" />
 
 
 
